@@ -16,50 +16,36 @@ export default async function Icon() {
     const profile = await prisma.profile.findFirst()
     const logoUrl = profile?.logoUrl
 
-    if (logoUrl) {
-        // If it's a local file (begins with /uploads), we need to read it
-        if (logoUrl.startsWith('/uploads')) {
-            // This is tricky with ImageResponse and local files in Next.js
-            // Usually ImageResponse expects a URL or standard CSS
-            // For now, simpler fallback: stick to Emoji or Text if Image fails
-            // OR return a redirect/rewrite if possible (not in Icon())
+    if (logoUrl && logoUrl.startsWith('/uploads')) {
+        const fullPath = join(process.cwd(), 'public', logoUrl)
+        try {
+            const imageBuffer = readFileSync(fullPath)
+            const imageBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`
 
-            // BETTER APPROACH: Just fetch the image bytes if full URL, or serve 
-            // If we want to serve the EXACT upload as favicon, we should likely
-            // just rely on a standard <link rel="icon"> in layout if we want 100% fidelity
-            // But `src/app/icon.tsx` is strictly for *generating* icons
-
-            // Let's try to render it as an img tag within the response
-            const fullPath = join(process.cwd(), 'public', logoUrl)
-            try {
-                const imageBuffer = readFileSync(fullPath)
-                const imageBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`
-
-                return new ImageResponse(
-                    (
-                        <div
-                            style={{
-                                fontSize: 24,
-                                background: 'transparent',
-                                width: '100%',
-                                height: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-                        >
-                            <img src={imageBase64} width="32" height="32" style={{ objectFit: 'contain' }} />
-                        </div>
-                    ),
-                    { ...size }
-                )
-            } catch (e) {
-                console.error('Error reading favicon source:', e)
-            }
+            return new ImageResponse(
+                (
+                    <div
+                        style={{
+                            background: 'transparent',
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        {/* Use objectFit 'contain' and pass numbers as strings properly to avoid satori errors */}
+                        <img src={imageBase64} width="32" height="32" />
+                    </div>
+                ),
+                { ...size }
+            )
+        } catch (e) {
+            console.error('Missing logo file, falling back to default icon.')
         }
     }
 
-    // Fallback if no logo
+    // Fallback if no logo or file missing
     return new ImageResponse(
         (
             <div
@@ -72,7 +58,7 @@ export default async function Icon() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
-                    borderRadius: '50%'
+                    borderRadius: 16 // Fix: Cannot use '50%' in Satori
                 }}
             >
                 D
