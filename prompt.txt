@@ -1,0 +1,59 @@
+**Role:**
+Act as an expert Full Stack Web Developer and UI/UX Designer specialized in Next.js, React, and modern CSS.
+
+**Goal:**
+Build a comprehensive, production-ready Portfolio and Blog application for a Cloud Systems Engineer named "Muhammed Noufal". The design should be modern, "Cyberpunk/DevOps" inspired (dark mode, neon accents, sleek glassmorphism), but professional.
+
+**Tech Stack:**
+1.  **Framework:** Next.js 15+ (App Router).
+2.  **Language:** TypeScript (Strict mode).
+3.  **Styling:** TailwindCSS v4.
+4.  **Database:** SQLite (local file) with Prisma ORM.
+5.  **Icons:** Lucide-React.
+6.  **Fonts:** Google Fonts (Geist Sans, Geist Mono) via `next/font`.
+
+**Key Features & Requirements:**
+
+1.  **Public Portfolio Pages:**
+    *   **Home (`/`):** Hero section with bio, "Cloud Systems Engineer" title, and navigation.
+    *   **Journey (`/journey`):** A timeline or list of professional experience (Jobs) and key milestones.
+    *   **Contact (`/contact`):** A form to send messages (stored in DB) and display social links (GitHub, LinkedIn).
+
+2.  **Blog System (`/blog`):**
+    *   **Listing:** Display list of published blog posts.
+    *   **Search:** Functional search bar that filters posts by title/content via URL query params (`?q=...`).
+    *   **Detail View:** Markdown rendering for blog content (use `react-markdown`).
+    *   **Sidebar:** Search widget, Recent Posts, Back to Home link.
+    *   **Design:** Ensure fixed Navbar does NOT overlap content (pad top of page).
+
+3.  **Admin Dashboard (`/admin`):**
+    *   *Note: Simple access, no complex auth for this MVP, or basic hidden route.*
+    *   **Manage Posts:** Create, Edit, Delete blog posts.
+    *   **Editor:** A content builder or markdown editor for writing posts.
+    *   **Manage Profile:** Update global site settings (Logo URL, Headlines, Theme Colors).
+    *   **Manage Dynamic Lists:** Add/Remove reference links or external resources.
+
+4.  **Database Schema (Prisma):**
+    *   `Profile`: Singleton model for global settings (Bio, Logo, Theme, Social Links).
+    *   `Blog`: ID, Slug, Title, Content, Published (Boolean), CreatedAt, Tags.
+    *   `Job`: Company, Position, DateRange, Description.
+    *   `Project`: Title, Description, DemoURL, RepoURL.
+    *   `Message`: Name, Email, Content (for contact form).
+
+5.  **Design System & UI:**
+    *   **Theme:** Dark mode default.
+    *   **Colors:** Customizable via `Profile` model (e.g., Purple/Blue gradients).
+    *   **Navbar:** Fixed top, backdrop-blur (glass effect), responsive mobile menu.
+    *   **Responsiveness:** Mobile-first approach. Ensure no UI overlaps on small screens.
+    *   **Animations:** Subtle hover effects on cards and buttons.
+
+6.  **Code Quality:**
+    *   Use `server actions` for form submissions (Contact, Admin updates).
+    *   Use `React Server Components` (RSC) for data fetching.
+    *   NO `any` types. Use proper TypeScript interfaces and Prisma-generated types.
+    *   Handle hydration errors (extensions) by suppressing hydration warnings on `html` tag.
+
+**Deliverables:**
+*   Full source code.
+*   `prisma/schema.prisma` file.
+*   `README.md` with deployment instructions (specifically for Ubuntu 24 + PM2).

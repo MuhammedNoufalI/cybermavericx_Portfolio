@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  password String // Hashed
+}
+
+model Profile {
+  id           String   @id @default(uuid())
+  fullName     String
+  headline     String
+  bio          String   @db.Text
+  email        String
+  phone        String?
+  location     String?
+  linkedinUrl  String?
+  githubUrl    String?
+  imageUrl     String? // New field
+  cvUrl        String? // PDF Resume
+  cvDisplayName String? // Download filename
+  logoUrl      String? // Website Logo
+  themeColor   String @default("purple")
+  twitterUrl   String?
+  availability String?  // e.g., "Open to work"
+  
+  // Blog Configuration
+  blogTitle    String   @default("Blog")
+  blogHeadline String?
+  blogGradient String?  // CSS class or value
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Job {
+  id          String   @id @default(uuid())
+  company     String
+  position    String
+  startDate   DateTime
+  endDate     DateTime? // Null means "Present"
+  description String   @db.Text
+  location    String?
+  technologies String? // Comma separated or JSON
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  imageUrl    String?
+  demoUrl     String?
+  repoUrl     String?
+  technologies String? // Comma separated
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Blog {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String   @db.LongText
+  excerpt   String?  @db.Text
+  coverImage String?
+  references String? // New field for references/links
+  advertising String? // New field for ads
+  tags      String?  // Comma separated
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Certification {
+  id        String   @id @default(uuid())
+  name      String
+  issuer    String
+  issueDate DateTime
+  credentialUrl String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  content   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ExternalPage {
+  id        String   @id @default(uuid())
+  title     String
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
