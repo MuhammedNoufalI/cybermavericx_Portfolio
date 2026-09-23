@@ -141,6 +141,18 @@ model CustomSection {
   @@map("customsection")
 }
 
+// Per-IP hits on reCAPTCHA-protected endpoints. Stored in the DB (not memory)
+// so limits hold across pm2 cluster workers.
+model RateLimitHit {
+  id        Int      @id @default(autoincrement())
+  bucket    String   @db.VarChar(191) // "<scope>:<ip>"
+  createdAt DateTime @default(now())
+
+  @@index([bucket, createdAt])
+  @@index([createdAt])
+  @@map("ratelimithit")
+}
+
 // Per-section visibility. A section renders only when published AND it has content.
 // Missing row = published (so new sections appear as soon as content is added).
 model SectionSetting {

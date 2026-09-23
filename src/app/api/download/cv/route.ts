@@ -1,7 +1,9 @@
 
 import { prisma } from '@/lib/prisma'
 import { sendTelegramNotification } from '@/lib/telegram'
-import { verifyRecaptcha } from '@/lib/recaptcha'
+import { verifyRecaptcha, log as logRecaptcha } from '@/lib/recaptcha'
+import { RECAPTCHA_ACTIONS, RECAPTCHA_GENERIC_ERROR } from '@/lib/recaptcha-config'
+import { rateLimit } from '@/lib/rate-limit'
 import { clientMeta } from '@/lib/request-meta'
 import { resolveStoredFile } from '@/lib/upload'
 import { readFile } from 'fs/promises'
@@ -18,10 +20,20 @@ export async function POST(request: Request) {
         const body = await request.json().catch(() => ({}))
         const meta = clientMeta(request.headers)
 
-        const check = await verifyRecaptcha(body?.token, 'cv_download', meta)
+        const token = typeof body?.token === 'string' ? body.token : null
+
+        // Free checks before the billable assessment: token present, then rate limit
+        if (!token && process.env.NODE_ENV === 'production') {
+            logRecaptcha({ action: RECAPTCHA_ACTIONS.cvDownload, outcome: 'reject', reason: 'missing-token', ip: meta.ip })
+            return NextResponse.json({ error: RECAPTCHA_GENERIC_ERROR }, { status: 403 })
+        }
+        if (!(await rateLimit('cv', meta.ip)).ok) {
+            return NextResponse.json({ error: 'Too many attempts. Please wait a few minutes and try again.' }, { status: 429 })
+        }
+
+        const check = await verifyRecaptcha(token, RECAPTCHA_ACTIONS.cvDownload, meta)
         if (!check.ok) {
-            console.warn('[CV] Blocked download:', check.reason, meta.ip, meta.userAgent)
-            return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 403 })
+            return NextResponse.json({ error: RECAPTCHA_GENERIC_ERROR }, { status: 403 })
         }
 
         const profile = await prisma.profile.findFirst({

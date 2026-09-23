@@ -1,45 +1,51 @@
 'use client'
 
-// Loads enterprise.js on demand and returns a token for `action`.
-// Returns null when no site key is configured (local dev).
+// Loads enterprise.js (explicit render) once, only when a protected form mounts.
+
+type RenderOpts = {
+    sitekey: string
+    action: string
+    callback: (token: string) => void
+    'expired-callback'?: () => void
+    'error-callback'?: () => void
+    badge?: 'bottomright' | 'bottomleft' | 'inline'
+}
 
 declare global {
     interface Window {
         grecaptcha?: {
             enterprise: {
                 ready: (cb: () => void) => void
-                execute: (siteKey: string, opts: { action: string }) => Promise<string>
+                render: (el: HTMLElement, opts: RenderOpts) => number
+                reset: (widgetId?: number) => void
             }
         }
+        __recaptchaOnload?: () => void
     }
 }
 
-const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
 let loader: Promise<void> | null = null
 
-function load(): Promise<void> {
+export function loadRecaptcha(): Promise<void> {
+    if (typeof window === 'undefined') return Promise.reject(new Error('ssr'))
+    if (window.grecaptcha?.enterprise?.render) return Promise.resolve()
     if (loader) return loader
-    loader = new Promise((resolve, reject) => {
+    loader = new Promise<void>((resolve, reject) => {
+        window.__recaptchaOnload = () => resolve()
         const s = document.createElement('script')
-        s.src = `https://www.google.com/recaptcha/enterprise.js?render=${encodeURIComponent(SITE_KEY!)}`
+        s.src = 'https://www.google.com/recaptcha/enterprise.js?onload=__recaptchaOnload&render=explicit'
         s.async = true
-        s.onload = () => resolve()
-        s.onerror = () => { loader = null; reject(new Error('Failed to load reCAPTCHA')) }
+        s.defer = true
+        s.onerror = () => { loader = null; s.remove(); reject(new Error('load-failed')) }
         document.head.appendChild(s)
     })
     return loader
 }
 
-export function preloadRecaptcha() {
-    if (SITE_KEY) load().catch(() => {})
-}
-
-export async function getRecaptchaToken(action: string): Promise<string | null> {
-    if (!SITE_KEY) return null
-    await load()
-    return new Promise((resolve, reject) => {
-        window.grecaptcha!.enterprise.ready(() => {
-            window.grecaptcha!.enterprise.execute(SITE_KEY, { action }).then(resolve, reject)
-        })
-    })
+// Badge visibility is scoped to pages that have a protected form mounted.
+// Hidden with visibility (not display/removal) so the widget keeps working.
+let mounted = 0
+export function badgeMounted(delta: 1 | -1) {
+    mounted = Math.max(0, mounted + delta)
+    document.documentElement.classList.toggle('recaptcha-hidden', mounted === 0)
 }

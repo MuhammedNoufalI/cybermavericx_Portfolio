@@ -23,6 +23,25 @@ Awards, Testimonials, Custom Sections, Blog) renders only when it is **Published
 Admin → Sections **and** has content. The nav, footer, CTAs and admin preview all use
 `getPortfolio()` in `src/lib/sections.ts`, so they can't disagree.
 
+## reCAPTCHA Enterprise
+
+Policy-based key bound to the submit button (`src/components/RecaptchaButton.tsx`);
+server verification via the Assessment API with a service account (`src/lib/recaptcha.ts`).
+
+| Protected form | Action | Endpoint |
+|---|---|---|
+| Contact form (`/contact`) | `submit_contact` | server action `submitMessage` |
+| CV download (home) | `download_cv` (pending approval) | `POST /api/download/cv` |
+
+Server checks, in order: honeypot (contact only) → missing token → per-IP rate limit
+(DB-backed, 5/min, 30/h) → Assessment API (3 s timeout, fail closed) → token valid →
+action matches → hostname allowed → score ≥ `RECAPTCHA_MIN_SCORE`. Every outcome is
+logged as a JSON line tagged `recaptcha` with score and reasons (`pm2 logs`).
+The browser only ever sees "Verification failed. Please try again."
+
+The script loads only on pages with a protected form; the badge is hidden
+(`visibility`) after navigating to a page without one.
+
 ## Files
 
 - `public/uploads/` — images only, served by `/uploads/[filename]`.

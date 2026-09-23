@@ -3,7 +3,9 @@
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
-import { verifyRecaptcha } from '@/lib/recaptcha'
+import { verifyRecaptcha, log as logRecaptcha } from '@/lib/recaptcha'
+import { RECAPTCHA_ACTIONS, RECAPTCHA_GENERIC_ERROR } from '@/lib/recaptcha-config'
+import { rateLimit } from '@/lib/rate-limit'
 import { clientMeta } from '@/lib/request-meta'
 
 // Public action — kept out of admin/actions.ts so importing it doesn't
@@ -14,6 +16,11 @@ export type ContactState = { ok: boolean; error?: string } | null
 const escapeMd = (s: string) => s.replace(/([_*`\[])/g, '\\$1')
 
 export async function submitMessage(_prev: ContactState, formData: FormData): Promise<ContactState> {
+    // Honeypot: pretend success, process nothing, no assessment
+    if (String(formData.get('website') || '').trim()) {
+        return { ok: true }
+    }
+
     const name = String(formData.get('name') || '').trim().slice(0, 200)
     const email = String(formData.get('email') || '').trim().slice(0, 200)
     const content = String(formData.get('message') || '').trim().slice(0, 5000)
@@ -24,11 +31,18 @@ export async function submitMessage(_prev: ContactState, formData: FormData): Pr
     }
 
     const meta = clientMeta(await headers())
-    const check = await verifyRecaptcha(token, 'contact', meta)
-    if (!check.ok) {
-        console.warn('[Contact] Blocked submission:', check.reason, meta.ip)
-        return { ok: false, error: 'Verification failed. Please try again.' }
+
+    // Free checks before the billable assessment: token present, then rate limit
+    if (!token && process.env.NODE_ENV === 'production') {
+        logRecaptcha({ action: RECAPTCHA_ACTIONS.contact, outcome: 'reject', reason: 'missing-token', ip: meta.ip })
+        return { ok: false, error: RECAPTCHA_GENERIC_ERROR }
     }
+    if (!(await rateLimit('contact', meta.ip)).ok) {
+        return { ok: false, error: 'Too many attempts. Please wait a few minutes and try again.' }
+    }
+
+    const check = await verifyRecaptcha(token, RECAPTCHA_ACTIONS.contact, meta)
+    if (!check.ok) return { ok: false, error: RECAPTCHA_GENERIC_ERROR }
 
     await prisma.message.create({ data: { name, email, content } })
 
