@@ -14,11 +14,13 @@ type Props = {
     className?: string
     children: React.ReactNode
     busyLabel?: React.ReactNode
+    // Rendered directly under the button (e.g. the CV filename)
+    below?: React.ReactNode
 }
 
 // Policy-based key: the widget is bound to the submit button itself, so Google
 // can show a challenge when the interaction looks risky.
-export default function RecaptchaButton({ action, onToken, beforeSubmit, className, children, busyLabel }: Props) {
+export default function RecaptchaButton({ action, onToken, beforeSubmit, className, children, busyLabel, below }: Props) {
     const btnRef = useRef<HTMLButtonElement>(null)
     const widgetId = useRef<number | null>(null)
     const inFlight = useRef(false)
@@ -66,7 +68,6 @@ export default function RecaptchaButton({ action, onToken, beforeSubmit, classNa
                 callback: (token) => { void run(token) },
                 'expired-callback': () => { setNotice('Verification expired. Please try again.'); reset() },
                 'error-callback': () => { setNotice('Verification could not load. Check your connection or ad blocker, then try again.'); reset() },
-                badge: 'inline',
             })
             readyRef.current = true
             setReady(true)
@@ -124,10 +125,20 @@ export default function RecaptchaButton({ action, onToken, beforeSubmit, classNa
             >
                 {busy && busyLabel ? busyLabel : children}
             </button>
+            {below}
             {notice && (
                 <p className="text-amber-400 text-xs mt-2 text-center">
                     {notice}{' '}
                     {!ready && <button type="button" className="underline" onClick={() => void mount()}>Retry</button>}
+                </p>
+            )}
+            {RECAPTCHA_SITE_KEY && (
+                // The badge is hidden on this page (visibility only), so Google's attribution is
+                // required here instead — visible without interaction, next to the button.
+                <p className="mt-3 max-w-xs text-center text-[11px] leading-snug text-gray-500">
+                    This site is protected by reCAPTCHA and the Google{' '}
+                    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-300">Privacy Policy</a> and{' '}
+                    <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-300">Terms of Service</a> apply.
                 </p>
             )}
         </div>

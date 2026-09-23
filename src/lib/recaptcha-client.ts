@@ -42,10 +42,11 @@ export function loadRecaptcha(): Promise<void> {
     return loader
 }
 
-// Badge visibility is scoped to pages that have a protected form mounted.
-// Hidden with visibility (not display/removal) so the widget keeps working.
+// The floating badge is hidden only while a protected button (which renders Google's
+// attribution text next to itself) is on the page — per SOP 3a. Hidden with visibility,
+// never display:none/removal, so the widget keeps working.
 let mounted = 0
 export function badgeMounted(delta: 1 | -1) {
     mounted = Math.max(0, mounted + delta)
-    document.documentElement.classList.toggle('recaptcha-hidden', mounted === 0)
+    document.documentElement.classList.toggle('recaptcha-attributed', mounted > 0)
 }

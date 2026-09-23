@@ -40,11 +40,11 @@ export default function CvDownloadButton({ label, caption }: { label: string, ca
                 action={RECAPTCHA_ACTIONS.cvDownload}
                 onToken={download}
                 busyLabel={<><Loader2 size={18} className="animate-spin" /> Preparing...</>}
+                below={caption && <p className="text-xs text-gray-500 mt-2 max-w-full break-all text-center">{caption}</p>}
                 className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all text-white font-medium backdrop-blur-sm disabled:opacity-60"
             >
                 <Download size={18} /> {label}
             </RecaptchaButton>
-            {caption && <p className="text-xs text-gray-500 mt-2 max-w-full break-all text-center">{caption}</p>}
             {error && <p className="text-red-400 text-xs mt-2 text-center">{error}</p>}
         </div>
     )

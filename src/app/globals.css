@@ -49,9 +49,9 @@ body {
   border: 1px solid rgba(168, 85, 247, 0.2);
 }
 
-/* reCAPTCHA badge only while a protected form is mounted (see lib/recaptcha-client.ts).
-   visibility, not display:none, so the widget keeps working. */
-.recaptcha-hidden .grecaptcha-badge {
+/* reCAPTCHA badge: hidden only while a protected button with Google's attribution text is
+   mounted (lib/recaptcha-client.ts). visibility, not display:none, so the widget keeps working. */
+.recaptcha-attributed .grecaptcha-badge {
   visibility: hidden;
 }
 
