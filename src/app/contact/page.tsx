@@ -1,7 +1,7 @@
 
 import { Mail, Linkedin, Github } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
-import { submitMessage } from '../admin/actions'
+import ContactForm from '@/components/ContactForm'
 
 export default async function Contact() {
     const profile = await prisma.profile.findFirst()
@@ -58,26 +58,7 @@ export default async function Contact() {
                 </div>
 
                 {/* Contact Form */}
-                <form action={async (formData) => {
-                    'use server'
-                    await submitMessage(formData)
-                }} className="bg-[#120822]/60 backdrop-blur-md p-8 rounded-2xl border border-purple-500/10 shadow-lg shadow-purple-500/5 space-y-6">
-                    <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">Name</label>
-                        <input name="name" type="text" id="name" required className="w-full px-4 py-3 rounded-lg bg-[#0d1117]/50 border border-gray-700 text-gray-100 focus:border-purple-500 focus:bg-[#0d1117] focus:ring-1 focus:ring-purple-500 outline-none transition-colors" placeholder="John Doe" />
-                    </div>
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                        <input name="email" type="email" id="email" required className="w-full px-4 py-3 rounded-lg bg-[#0d1117]/50 border border-gray-700 text-gray-100 focus:border-purple-500 focus:bg-[#0d1117] focus:ring-1 focus:ring-purple-500 outline-none transition-colors" placeholder="john@example.com" />
-                    </div>
-                    <div>
-                        <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-2">Message</label>
-                        <textarea name="message" id="message" rows={4} required className="w-full px-4 py-3 rounded-lg bg-[#0d1117]/50 border border-gray-700 text-gray-100 focus:border-purple-500 focus:bg-[#0d1117] focus:ring-1 focus:ring-purple-500 outline-none transition-colors" placeholder="Hello..." />
-                    </div>
-                    <button type="submit" className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-purple-500/25 hover:scale-[1.02]">
-                        Send Message
-                    </button>
-                </form>
+                <ContactForm />
             </div>
 
             <div className="mt-20 text-center">

@@ -4,11 +4,12 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { saveFile } from '@/lib/upload'
+import { requireAdmin } from '@/lib/auth'
 
 // --- Jobs ---
 
 export async function createJob(formData: FormData) {
+    await requireAdmin()
     const company = formData.get('company') as string
     const position = formData.get('position') as string
     const startDate = new Date(formData.get('startDate') as string)
@@ -30,12 +31,13 @@ export async function createJob(formData: FormData) {
         },
     })
 
-    revalidatePath('/journey')
+    revalidatePath('/')
     revalidatePath('/admin/jobs')
     redirect('/admin/jobs')
 }
 
 export async function updateJob(id: string, formData: FormData) {
+    await requireAdmin()
     const company = formData.get('company') as string
     const position = formData.get('position') as string
     const startDate = new Date(formData.get('startDate') as string)
@@ -58,20 +60,22 @@ export async function updateJob(id: string, formData: FormData) {
         },
     })
 
-    revalidatePath('/journey')
+    revalidatePath('/')
     revalidatePath('/admin/jobs')
     redirect('/admin/jobs')
 }
 
 export async function deleteJob(id: string) {
+    await requireAdmin()
     await prisma.job.delete({ where: { id } })
-    revalidatePath('/journey')
+    revalidatePath('/')
     revalidatePath('/admin/jobs')
 }
 
 // --- Blogs ---
 
 export async function createBlog(formData: FormData) {
+    await requireAdmin()
     const title = formData.get('title') as string
     const slug = formData.get('slug') as string
     const content = formData.get('content') as string
@@ -99,6 +103,7 @@ export async function createBlog(formData: FormData) {
 }
 
 export async function updateBlog(id: string, formData: FormData) {
+    await requireAdmin()
     const title = formData.get('title') as string
     const slug = formData.get('slug') as string
     const content = formData.get('content') as string
@@ -126,44 +131,22 @@ export async function updateBlog(id: string, formData: FormData) {
 }
 
 export async function deleteBlog(id: string) {
+    await requireAdmin()
     await prisma.blog.delete({ where: { id } })
     revalidatePath('/blog')
     revalidatePath('/admin/blogs')
 }
 
-// --- Messages (Contact Form) ---
-
-export async function submitMessage(formData: FormData) {
-    const name = formData.get('name') as string
-    const email = formData.get('email') as string
-    const content = formData.get('message') as string
-
-    await (prisma as any).message.create({
-        data: {
-            name,
-            email,
-            content,
-        }
-    })
-
-    // Telegram Notification
-    try {
-        const text = `📩 *New Contact Message*\n\n*Name:* ${name}\n*Email:* ${email}\n\n*Message:*\n${content}`
-        const { sendTelegramNotification } = await import('@/lib/telegram')
-        await sendTelegramNotification(text)
-    } catch (error) {
-        console.error('Failed to send Telegram notification:', error)
-    }
-
-    revalidatePath('/admin/messages')
-}
+// --- Messages ---
 
 export async function deleteMessage(id: string) {
+    await requireAdmin()
     await (prisma as any).message.delete({ where: { id } })
     revalidatePath('/admin/messages')
 }
 
 export async function markMessageRead(id: string) {
+    await requireAdmin()
     const msg = await (prisma as any).message.findUnique({ where: { id } })
     if (msg) {
         await (prisma as any).message.update({
@@ -177,6 +160,7 @@ export async function markMessageRead(id: string) {
 // --- External Pages ---
 
 export async function createExternalPage(formData: FormData) {
+    await requireAdmin()
     const title = formData.get('title') as string
     const url = formData.get('url') as string
 
@@ -193,6 +177,7 @@ export async function createExternalPage(formData: FormData) {
 }
 
 export async function deleteExternalPage(id: string) {
+    await requireAdmin()
     await prisma.externalPage.delete({ where: { id } })
     revalidatePath('/')
     revalidatePath('/admin/pages')

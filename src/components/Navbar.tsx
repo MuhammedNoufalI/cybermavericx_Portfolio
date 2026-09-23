@@ -5,24 +5,17 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import type { NavLink } from '@/lib/sections'
 
-export default function Navbar({ logoUrl, profileName, externalPages = [] }: { logoUrl?: string | null, profileName?: string | null, externalPages?: any[] }) {
+// Links are computed server-side from visible sections (see lib/sections.ts),
+// so the menu never points at a section that isn't rendered.
+export default function Navbar({ logoUrl, links }: { logoUrl?: string | null, links: NavLink[] }) {
     const [isOpen, setIsOpen] = useState(false)
     const pathname = usePathname()
 
     if (pathname.startsWith('/admin') || pathname.startsWith('/api')) return null
 
-    const links = [
-        { href: '/', label: 'Home' },
-        { href: '/journey', label: 'Journey' },
-        { href: '/blog', label: 'Blog' },
-        ...externalPages.map(page => ({
-            href: page.url,
-            label: page.title,
-            external: true
-        })),
-        { href: '/contact', label: 'Contact' },
-    ]
+    const isActive = (href: string) => href === pathname || (href !== '/' && !href.includes('#') && pathname.startsWith(href))
 
     return (
         <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-white/5">
@@ -36,17 +29,17 @@ export default function Navbar({ logoUrl, profileName, externalPages = [] }: { l
 
                     {/* Desktop Nav */}
                     <div className="hidden md:block">
-                        <div className="ml-10 flex items-baseline space-x-8">
+                        <div className="ml-10 flex items-baseline space-x-6">
                             {links.map((link) => (
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    target={(link as any).external ? "_blank" : undefined}
-                                    className={`relative px-3 py-2 text-sm font-medium transition-colors hover:text-blue-400 ${pathname === link.href ? 'text-blue-400' : 'text-gray-300'
-                                        }`}
+                                    target={link.external ? "_blank" : undefined}
+                                    rel={link.external ? "noopener noreferrer" : undefined}
+                                    className={`relative px-2 py-2 text-sm font-medium transition-colors hover:text-blue-400 ${isActive(link.href) ? 'text-blue-400' : 'text-gray-300'}`}
                                 >
                                     {link.label}
-                                    {pathname === link.href && (
+                                    {isActive(link.href) && (
                                         <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 shadow-lg shadow-blue-500/50" />
                                     )}
                                 </Link>
@@ -59,6 +52,7 @@ export default function Navbar({ logoUrl, profileName, externalPages = [] }: { l
                         <button
                             onClick={() => setIsOpen(!isOpen)}
                             className="text-gray-300 hover:text-white p-2"
+                            aria-label="Toggle menu"
                         >
                             {isOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
@@ -75,8 +69,9 @@ export default function Navbar({ logoUrl, profileName, externalPages = [] }: { l
                                 key={link.href}
                                 href={link.href}
                                 onClick={() => setIsOpen(false)}
-                                target={(link as any).external ? "_blank" : undefined}
-                                className={`block px-3 py-2 rounded-md text-base font-medium ${pathname === link.href
+                                target={link.external ? "_blank" : undefined}
+                                rel={link.external ? "noopener noreferrer" : undefined}
+                                className={`block px-3 py-2 rounded-md text-base font-medium ${isActive(link.href)
                                     ? 'bg-blue-500/10 text-blue-400'
                                     : 'text-gray-300 hover:bg-white/5 hover:text-white'
                                     }`}

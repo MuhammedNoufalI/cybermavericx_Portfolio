@@ -135,7 +135,7 @@ export default function ProfileForm({ profile, updateProfileAction }: ProfileFor
                         <label className="block text-sm font-medium mb-2 text-gray-700">CV / Resume (PDF)</label>
                         <div className="flex gap-4 items-center mb-2">
                             {(profile as any).cvUrl && (
-                                <a href={(profile as any).cvUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg border border-red-100 hover:bg-red-100 transition-colors">
+                                <a href="/admin/cv" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg border border-red-100 hover:bg-red-100 transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
                                     View Current CV
                                 </a>

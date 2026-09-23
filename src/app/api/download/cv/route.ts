@@ -1,49 +1,56 @@
 
 import { prisma } from '@/lib/prisma'
 import { sendTelegramNotification } from '@/lib/telegram'
+import { verifyRecaptcha } from '@/lib/recaptcha'
+import { clientMeta } from '@/lib/request-meta'
+import { resolveStoredFile } from '@/lib/upload'
 import { readFile } from 'fs/promises'
-import { join } from 'path'
 import { NextResponse } from 'next/server'
 
-export async function GET(request: Request) {
+// GET used to serve the CV directly, so crawlers/curl hit it daily.
+// Downloads now require a POST with a valid reCAPTCHA Enterprise token.
+export async function GET() {
+    return new NextResponse('Method Not Allowed', { status: 405, headers: { Allow: 'POST', 'X-Robots-Tag': 'noindex' } })
+}
+
+export async function POST(request: Request) {
     try {
+        const body = await request.json().catch(() => ({}))
+        const meta = clientMeta(request.headers)
+
+        const check = await verifyRecaptcha(body?.token, 'cv_download', meta)
+        if (!check.ok) {
+            console.warn('[CV] Blocked download:', check.reason, meta.ip, meta.userAgent)
+            return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 403 })
+        }
+
         const profile = await prisma.profile.findFirst({
             select: { cvUrl: true, cvDisplayName: true }
         })
-
-        if (!profile || !profile.cvUrl) {
-            return new NextResponse('CV not found', { status: 404 })
+        const filepath = profile?.cvUrl ? resolveStoredFile(profile.cvUrl) : null
+        if (!filepath) {
+            return NextResponse.json({ error: 'CV not found' }, { status: 404 })
         }
 
-        // Send Telegram Notification
-        const ip = request.headers.get('x-forwarded-for') || 'Unknown IP'
-        const userAgent = request.headers.get('user-agent') || 'Unknown User Agent'
-        const timestamp = new Date().toLocaleString()
-
-        const message = `📥 *CV Downloaded*\n\n*Time:* ${timestamp}\n*IP:* ${ip}\n*User Agent:* ${userAgent}`
-
-        // Fire and forget notification to not block download
-        sendTelegramNotification(message).catch(err => console.error('CV Notification Error:', err))
-
-        // Serve File
-        // cvUrl is like /uploads/filename.pdf
-        const filename = profile.cvUrl.split('/').pop()
-        if (!filename) return new NextResponse('Invalid file path', { status: 500 })
-
-        const filepath = join(process.cwd(), 'public', 'uploads', filename)
         const fileBuffer = await readFile(filepath)
 
-        const downloadName = profile.cvDisplayName || filename
+        // Only verified humans reach this point
+        const message = `📥 *CV Downloaded*\n\n*Time:* ${new Date().toLocaleString()}\n*IP:* ${meta.ip}${meta.country ? ` (${meta.country})` : ''}\n*Score:* ${check.score ?? 'n/a'}\n*User Agent:* ${meta.userAgent}`
+        sendTelegramNotification(message).catch(err => console.error('CV Notification Error:', err))
+
+        const downloadName = (profile!.cvDisplayName || 'CV.pdf').replace(/["\r\n]/g, '')
 
         return new NextResponse(fileBuffer, {
             headers: {
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': `attachment; filename="${downloadName}"`,
+                'Cache-Control': 'no-store',
+                'X-Robots-Tag': 'noindex',
             },
         })
 
     } catch (error) {
         console.error('Download Error:', error)
-        return new NextResponse('Internal Server Error', { status: 500 })
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
 }

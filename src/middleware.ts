@@ -1,8 +1,9 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { SESSION_COOKIE, verifySessionToken } from '@/lib/session'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const hostname = request.headers.get('host') || ''
 
     // Domain-based routing: cybermavericx.com -> /blog
@@ -23,7 +24,7 @@ export function middleware(request: NextRequest) {
 
     // Protect /admin routes
     if (request.nextUrl.pathname.startsWith('/admin')) {
-        const adminSession = request.cookies.get('admin_session')
+        const adminSession = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value)
 
         // If trying to access protected admin pages (everything except /admin login itself)
         // Note: If /admin is the login page, we allow it.
