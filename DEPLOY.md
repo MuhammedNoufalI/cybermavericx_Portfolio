@@ -27,6 +27,15 @@ Education, Skills, Certifications, Awards + CV), Projects, Blog. A page and its 
 link exist only while one of its sections is visible (Journey also counts the CV). The nav,
 footer, CTAs and admin preview all use `getPortfolio()` in `src/lib/sections.ts`.
 
+## Caching (why navigation is instant)
+
+Public pages (Home, Journey, Projects, Blog, blog posts, Contact, Privacy, favicon) are
+pre-rendered and served from Next's cache; menu links are prefetched, so clicks don't wait
+for the server. Every admin save calls `revalidatePath('/', 'layout')`, which regenerates
+them immediately; `revalidate = 3600` is only a safety net (e.g. for direct DB edits).
+Blog search is the only per-request public page (`/blog/search?q=`).
+`npm run build` reads the database, so the DB must be reachable at build time.
+
 ## CV download tracking
 
 - **Tracked links** (Admin → Tracked Links): personal URLs like `/?r=enbd-sara-hr-7f3k`.

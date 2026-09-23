@@ -3,7 +3,9 @@ import { getPortfolio } from '@/lib/sections'
 import PortfolioSections from '@/components/PortfolioSections'
 import CvDownloadButton from '@/components/CvDownloadButton'
 
-export const dynamic = 'force-dynamic'
+// Served from cache and regenerated when content is edited in Admin (every admin
+// save calls revalidatePath('/', 'layout')). The hourly revalidate is only a safety net.
+export const revalidate = 3600
 
 // Experience, Education, Skills, Certifications, Awards + CV download.
 // Only visible sections render; the page itself 404s when there is nothing to show.

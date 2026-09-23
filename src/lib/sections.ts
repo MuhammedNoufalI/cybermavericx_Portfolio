@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 import type { Job, Project, Skill, Education, Certification, Award, Testimonial, CustomSection, Profile } from '@prisma/client'
 
@@ -45,7 +46,7 @@ export type NavLink = { href: string; label: string; external?: boolean }
 
 const hasText = (s?: string | null) => !!s && s.trim().length > 0
 
-export async function getPortfolio() {
+export const getPortfolio = cache(async function getPortfolio() {
     const [profile, settings, jobs, projects, skills, education, certifications, awards, testimonials, customSections, blogCount, externalPages] = await Promise.all([
         prisma.profile.findFirst(),
         prisma.sectionSetting.findMany(),
@@ -117,7 +118,7 @@ export async function getPortfolio() {
             custom: visibleCustom as CustomSection[],
         },
     }
-}
+})
 
 export type Portfolio = Awaited<ReturnType<typeof getPortfolio>>
 export type { Profile }

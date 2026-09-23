@@ -30,7 +30,7 @@ export async function createCertification(formData: FormData) {
         },
     })
 
-    revalidatePath('/')
+    revalidatePath('/', 'layout')
     revalidatePath('/admin/certs')
     redirect('/admin/certs')
 }
@@ -60,7 +60,7 @@ export async function updateCertification(id: string, formData: FormData) {
         }
     })
 
-    revalidatePath('/')
+    revalidatePath('/', 'layout')
     revalidatePath('/admin/certs')
     redirect('/admin/certs')
 }
@@ -68,6 +68,6 @@ export async function updateCertification(id: string, formData: FormData) {
 export async function deleteCertification(id: string) {
     await requireAdmin()
     await prisma.certification.delete({ where: { id } })
-    revalidatePath('/')
+    revalidatePath('/', 'layout')
     revalidatePath('/admin/certs')
 }

@@ -22,6 +22,9 @@ export default function RecaptchaButton({ action, onToken, beforeSubmit, classNa
     const btnRef = useRef<HTMLButtonElement>(null)
     const widgetId = useRef<number | null>(null)
     const inFlight = useRef(false)
+    const mounting = useRef(false)
+    const started = useRef(false)
+    const readyRef = useRef(!RECAPTCHA_SITE_KEY)
     const [busy, setBusy] = useState(false)
     const [ready, setReady] = useState(!RECAPTCHA_SITE_KEY)
     const [notice, setNotice] = useState('')
@@ -52,7 +55,8 @@ export default function RecaptchaButton({ action, onToken, beforeSubmit, classNa
     }, [reset])
 
     const mount = useCallback(async () => {
-        if (!RECAPTCHA_SITE_KEY || !btnRef.current || widgetId.current !== null) return
+        if (!RECAPTCHA_SITE_KEY || !btnRef.current || widgetId.current !== null || mounting.current) return
+        mounting.current = true
         try {
             await loadRecaptcha()
             await new Promise<void>(r => window.grecaptcha!.enterprise.ready(r))
@@ -64,30 +68,58 @@ export default function RecaptchaButton({ action, onToken, beforeSubmit, classNa
                 'error-callback': () => { setNotice('Verification could not load. Check your connection or ad blocker, then try again.'); reset() },
                 badge: 'inline',
             })
+            readyRef.current = true
             setReady(true)
             setNotice('')
         } catch {
             setNotice('Verification could not load. Check your connection or ad blocker, then retry.')
+        } finally {
+            mounting.current = false
         }
     }, [action, reset, run])
 
-    useEffect(() => {
-        if (!RECAPTCHA_SITE_KEY) return
-        badgeMounted(1)
+    // Lazy start: Google's widget costs ~200–900 ms of main-thread time per page view, so it is
+    // rendered only on intent (hover / focus / touch) or once the button is on screen and the
+    // browser is idle — never during navigation.
+    const start = useCallback(() => {
+        if (started.current) return
+        started.current = true
         void mount()
-        return () => badgeMounted(-1)
     }, [mount])
 
-    // No site key (local dev): plain button, server skips verification outside production.
-    const onClick = RECAPTCHA_SITE_KEY ? undefined : () => { void run(null) }
+    useEffect(() => {
+        if (!RECAPTCHA_SITE_KEY || !btnRef.current) return
+        badgeMounted(1)
+        let idleId: number | undefined
+        const io = new IntersectionObserver(entries => {
+            if (!entries.some(e => e.isIntersecting)) return
+            io.disconnect()
+            const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500))
+            idleId = ric(start, { timeout: 3000 })
+        })
+        io.observe(btnRef.current)
+        return () => {
+            io.disconnect()
+            if (idleId !== undefined) (window.cancelIdleCallback ?? window.clearTimeout)(idleId)
+            badgeMounted(-1)
+        }
+    }, [start])
+
+    const onClick = () => {
+        // No site key (local dev): plain button, server skips verification outside production.
+        if (!RECAPTCHA_SITE_KEY) { void run(null); return }
+        // Tapped before the widget finished loading: start it now; once rendered, the widget owns clicks.
+        if (!readyRef.current) { start(); setNotice('One moment… preparing secure verification, then tap again.') }
+    }
 
     return (
-        <div className="w-full flex flex-col items-center">
+        <div className="w-full flex flex-col items-center" onPointerEnter={start} onFocusCapture={start} onTouchStartCapture={start}>
             <button
                 ref={btnRef}
                 type="button"
                 onClick={onClick}
-                disabled={busy || !ready}
+                disabled={busy}
+                aria-disabled={busy || !ready}
                 className={className}
             >
                 {busy && busyLabel ? busyLabel : children}

@@ -5,7 +5,9 @@ import 'highlight.js/styles/github-dark.css'
 import { getPortfolio } from '@/lib/sections'
 import PortfolioSections from '@/components/PortfolioSections'
 
-export const dynamic = 'force-dynamic'
+// Served from cache and regenerated when content is edited in Admin (every admin
+// save calls revalidatePath('/', 'layout')). The hourly revalidate is only a safety net.
+export const revalidate = 3600
 
 export default async function Home() {
   const portfolio = await getPortfolio()

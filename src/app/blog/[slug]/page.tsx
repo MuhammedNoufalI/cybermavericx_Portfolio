@@ -6,6 +6,15 @@ import rehypeRaw from 'rehype-raw'
 import { Calendar, Tag, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
+// Served from cache and regenerated when content is edited in Admin (every admin
+// save calls revalidatePath('/', 'layout')). The hourly revalidate is only a safety net.
+export const revalidate = 3600
+
+export async function generateStaticParams() {
+    const posts = await prisma.blog.findMany({ where: { published: true }, select: { slug: true } })
+    return posts.map(p => ({ slug: p.slug }))
+}
+
 interface PageProps {
     params: Promise<{ slug: string }>
 }

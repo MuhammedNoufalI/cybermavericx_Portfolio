@@ -4,8 +4,8 @@ import { readFile } from 'fs/promises'
 import { resolveStoredFile } from '@/lib/upload'
 
 // Favicon generated from the logo uploaded in Admin → Profile.
-// Rendered per request so a new logo shows up without a rebuild.
-export const dynamic = 'force-dynamic'
+// Cached; regenerated when the profile/logo is saved (revalidatePath('/', 'layout')).
+export const revalidate = 3600
 export const size = { width: 32, height: 32 }
 export const contentType = 'image/png'
 

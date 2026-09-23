@@ -22,9 +22,9 @@ export const metadata: Metadata = {
   description: "Portfolio of Muhammed Noufal, Cloud Systems Engineer specializing in AWS, Azure, and DevOps.",
 };
 
-// Nav and sections come from CMS content; always render fresh so adding/removing
-// content immediately shows/hides sections and links.
-export const dynamic = 'force-dynamic'
+// Served from cache and regenerated when content is edited in Admin (every admin
+// save calls revalidatePath('/', 'layout')). The hourly revalidate is only a safety net.
+export const revalidate = 3600
 
 const THEMES:Record<string, { primary: string; secondary: string }> = {
   purple: { primary: '168, 85, 247', secondary: '34, 211, 238' }, // #a855f7, #22d3ee

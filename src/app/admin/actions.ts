@@ -31,7 +31,7 @@ export async function createJob(formData: FormData) {
         },
     })
 
-    revalidatePath('/')
+    revalidatePath('/', 'layout')
     revalidatePath('/admin/jobs')
     redirect('/admin/jobs')
 }
@@ -60,7 +60,7 @@ export async function updateJob(id: string, formData: FormData) {
         },
     })
 
-    revalidatePath('/')
+    revalidatePath('/', 'layout')
     revalidatePath('/admin/jobs')
     redirect('/admin/jobs')
 }
@@ -68,7 +68,7 @@ export async function updateJob(id: string, formData: FormData) {
 export async function deleteJob(id: string) {
     await requireAdmin()
     await prisma.job.delete({ where: { id } })
-    revalidatePath('/')
+    revalidatePath('/', 'layout')
     revalidatePath('/admin/jobs')
 }
 
@@ -76,7 +76,9 @@ export async function deleteJob(id: string) {
 
 // URL-safe slug; falls back to the title and is made unique (never a DB crash on duplicates)
 async function uniqueSlug(raw: string, title: string, excludeId?: string) {
-    const base = (raw || title).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 150) || 'post'
+    // keeps existing slugs like "repo_swap" unchanged
+    let base = (raw || title).toLowerCase().normalize('NFKD').replace(/[^a-z0-9_]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 150) || 'post'
+    if (base === 'search') base = 'search-post' // /blog/search is the search page
     let slug = base
     for (let i = 2; ; i++) {
         const clash = await prisma.blog.findFirst({ where: { slug, ...(excludeId && { NOT: { id: excludeId } }) }, select: { id: true } })
@@ -162,7 +164,7 @@ export async function createExternalPage(formData: FormData) {
         }
     })
 
-    revalidatePath('/')
+    revalidatePath('/', 'layout')
     revalidatePath('/admin/pages')
     redirect('/admin/pages')
 }
@@ -170,6 +172,6 @@ export async function createExternalPage(formData: FormData) {
 export async function deleteExternalPage(id: string) {
     await requireAdmin()
     await prisma.externalPage.delete({ where: { id } })
-    revalidatePath('/')
+    revalidatePath('/', 'layout')
     revalidatePath('/admin/pages')
 }
