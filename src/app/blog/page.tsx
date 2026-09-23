@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Calendar, Tag, Search } from 'lucide-react'
 import { Blog } from '@prisma/client'
+import { notFound } from 'next/navigation'
+
+export const dynamic = 'force-dynamic'
 
 export default async function BlogList(props: {
     searchParams: Promise<{ q?: string }>
@@ -26,6 +29,11 @@ export default async function BlogList(props: {
         }),
         prisma.profile.findFirst()
     ])
+
+    // Blog follows the same rule as every section: empty or disabled => it doesn't exist.
+    const blogSetting = await prisma.sectionSetting.findUnique({ where: { key: 'blog' } })
+    const publishedCount = query ? await prisma.blog.count({ where: { published: true } }) : posts.length
+    if (blogSetting?.published === false || publishedCount === 0) notFound()
 
     const blogTitle = profile?.blogTitle || 'Blog'
     const blogHeadline = profile?.blogHeadline || ''
@@ -57,8 +65,7 @@ export default async function BlogList(props: {
                     <div className="lg:col-span-2 space-y-6">
                         {posts.length === 0 ? (
                             <div className="text-center text-gray-500 py-20 bg-white dark:bg-[#120822]/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-                                <p className="text-lg">No posts yet. Check back soon!</p>
-                                <p className="text-sm mt-2">Admin needs to publish some content.</p>
+                                <p className="text-lg">No posts match &ldquo;{query}&rdquo;.</p>
                             </div>
                         ) : (
                             posts.map((post: Blog) => (
@@ -123,7 +130,7 @@ export default async function BlogList(props: {
                         </div>
 
                         {/* Recent Posts */}
-                        <div className="bg-white dark:bg-[#120822] border border-gray-200 dark:border-gray-800 rounded-lg p-6">
+                        {recentPosts.length > 0 && <div className="bg-white dark:bg-[#120822] border border-gray-200 dark:border-gray-800 rounded-lg p-6">
                             <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Recent Posts</h3>
                             <div className="space-y-4">
                                 {recentPosts.map((post: Blog) => (
@@ -145,7 +152,7 @@ export default async function BlogList(props: {
                                     </Link>
                                 ))}
                             </div>
-                        </div>
+                        </div>}
 
                         {/* Back to Home */}
                         <div className="text-center">

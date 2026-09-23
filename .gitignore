@@ -66,3 +66,6 @@ $RECYCLE.BIN/
 # User Uploads
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Private uploads (CV) — never web-served
+private_uploads/

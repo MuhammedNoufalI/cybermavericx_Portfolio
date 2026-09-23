@@ -17,7 +17,8 @@ export default async function BlogPost({ params }: PageProps) {
         where: { slug },
     })
 
-    if (!post) {
+    const blogSetting = await prisma.sectionSetting.findUnique({ where: { key: 'blog' } })
+    if (!post || !post.published || blogSetting?.published === false) {
         notFound()
     }
 

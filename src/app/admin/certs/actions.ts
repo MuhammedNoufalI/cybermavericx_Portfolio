@@ -1,13 +1,14 @@
-
+'use server'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { saveFile } from '@/lib/upload'
+import { requireAdmin } from '@/lib/auth'
 
 // --- Certifications ---
 
 export async function createCertification(formData: FormData) {
-    'use server'
+    await requireAdmin()
     const name = formData.get('name') as string
     const issuer = formData.get('issuer') as string
     const issueDate = new Date(formData.get('issueDate') as string)
@@ -30,13 +31,12 @@ export async function createCertification(formData: FormData) {
     })
 
     revalidatePath('/')
-    revalidatePath('/journey')
     revalidatePath('/admin/certs')
     redirect('/admin/certs')
 }
 
 export async function updateCertification(id: string, formData: FormData) {
-    'use server'
+    await requireAdmin()
     const name = formData.get('name') as string
     const issuer = formData.get('issuer') as string
     const issueDate = new Date(formData.get('issueDate') as string)
@@ -61,15 +61,13 @@ export async function updateCertification(id: string, formData: FormData) {
     })
 
     revalidatePath('/')
-    revalidatePath('/journey')
     revalidatePath('/admin/certs')
     redirect('/admin/certs')
 }
 
 export async function deleteCertification(id: string) {
-    'use server'
+    await requireAdmin()
     await prisma.certification.delete({ where: { id } })
     revalidatePath('/')
-    revalidatePath('/journey')
     revalidatePath('/admin/certs')
 }

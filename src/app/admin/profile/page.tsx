@@ -1,9 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { saveFile, deleteFile } from '@/lib/upload'
+import { requireAdmin } from '@/lib/auth'
 
 async function updateProfile(formData: FormData) {
     'use server'
+    await requireAdmin()
     const id = formData.get('id') as string
     const fullName = formData.get('fullName') as string
     const headline = formData.get('headline') as string
@@ -39,7 +41,8 @@ async function updateProfile(formData: FormData) {
                 await deleteFile(currentProfile.cvUrl)
             }
 
-            cvUrl = await saveFile(cvFile)
+            // Stored outside public/ — only downloadable via reCAPTCHA-checked /api/download/cv
+            cvUrl = await saveFile(cvFile, { private: true, allowed: ['pdf'] })
             console.log('CV Saved to:', cvUrl)
         } catch (err) {
             console.error('CV Save Error:', err)

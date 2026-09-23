@@ -67,10 +67,101 @@ model Project {
   demoUrl     String?
   repoUrl     String?
   technologies String? // Comma separated
+  order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("project")
+}
+
+model Education {
+  id          String    @id @default(uuid())
+  institution String
+  degree      String
+  field       String?
+  location    String?
+  startDate   DateTime?
+  endDate     DateTime? // Null means "Present"
+  description String?   @db.Text
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("education")
+}
+
+model Award {
+  id          String    @id @default(uuid())
+  title       String
+  issuer      String?
+  date        DateTime?
+  description String?   @db.Text
+  url         String?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("award")
+}
+
+model Testimonial {
+  id        String   @id @default(uuid())
+  name      String
+  role      String?
+  company   String?
+  quote     String   @db.Text
+  imageUrl  String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("testimonial")
+}
+
+model Skill {
+  id        String   @id @default(uuid())
+  name      String
+  category  String? // Groups skills, e.g. "Cloud", "DevOps"
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("skill")
+}
+
+model CustomSection {
+  id        String   @id @default(uuid())
+  title     String
+  content   String   @db.LongText // Markdown
+  published Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customsection")
+}
+
+// Per-IP hits on reCAPTCHA-protected endpoints. Stored in the DB (not memory)
+// so limits hold across pm2 cluster workers.
+model RateLimitHit {
+  id        Int      @id @default(autoincrement())
+  bucket    String   @db.VarChar(191) // "<scope>:<ip>"
+  createdAt DateTime @default(now())
+
+  @@index([bucket, createdAt])
+  @@index([createdAt])
+  @@map("ratelimithit")
+}
+
+// Per-section visibility. A section renders only when published AND it has content.
+// Missing row = published (so new sections appear as soon as content is added).
+model SectionSetting {
+  key       String   @id // about | experience | projects | skills | education | certifications | awards | testimonials | blog | custom
+  published Boolean  @default(true)
+  order     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@map("sectionsetting")
 }
 
 model Blog {

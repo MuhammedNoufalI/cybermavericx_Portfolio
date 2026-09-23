@@ -1,6 +1,6 @@
 
 import Link from 'next/link'
-import { LayoutDashboard, User, Briefcase, FileText, Award, LogOut, Mail } from 'lucide-react'
+import { LayoutDashboard, User, Briefcase, FileText, Award, LogOut, Mail, Layers, Eye, FolderGit2, Wrench, GraduationCap, Trophy, Quote, LayoutList, Globe } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -28,10 +28,19 @@ export default async function AdminLayout({
 
                 <nav className="flex-1 p-4 space-y-1">
                     <NavLink href="/admin/dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" />
-                    <NavLink href="/admin/profile" icon={<User size={20} />} label="Profile" />
+                    <NavLink href="/admin/sections" icon={<Layers size={20} />} label="Sections" />
+                    <NavLink href="/admin/preview" icon={<Eye size={20} />} label="Preview" />
+                    <NavLink href="/admin/profile" icon={<User size={20} />} label="Profile / About" />
                     <NavLink href="/admin/jobs" icon={<Briefcase size={20} />} label="Experience" />
-                    <NavLink href="/admin/blogs" icon={<FileText size={20} />} label="Blog" />
+                    <NavLink href="/admin/content/projects" icon={<FolderGit2 size={20} />} label="Projects" />
+                    <NavLink href="/admin/content/skills" icon={<Wrench size={20} />} label="Skills" />
+                    <NavLink href="/admin/content/education" icon={<GraduationCap size={20} />} label="Education" />
                     <NavLink href="/admin/certs" icon={<Award size={20} />} label="Certifications" />
+                    <NavLink href="/admin/content/awards" icon={<Trophy size={20} />} label="Awards" />
+                    <NavLink href="/admin/content/testimonials" icon={<Quote size={20} />} label="Testimonials" />
+                    <NavLink href="/admin/content/custom" icon={<LayoutList size={20} />} label="Custom Sections" />
+                    <NavLink href="/admin/blogs" icon={<FileText size={20} />} label="Blog" />
+                    <NavLink href="/admin/pages" icon={<Globe size={20} />} label="External Links" />
                     <NavLink href="/admin/messages" icon={<Mail size={20} />} label="Messages" />
                 </nav>
 
