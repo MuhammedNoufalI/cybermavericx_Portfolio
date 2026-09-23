@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowUp, ArrowDown, Eye } from 'lucide-react'
-import { getPortfolio } from '@/lib/sections'
+import { getPortfolio, PAGES } from '@/lib/sections'
 import { setSectionPublished, moveSection } from '../content/actions'
 import SectionStatusBadge from './SectionStatusBadge'
 
@@ -33,7 +33,8 @@ export default async function SectionsPage() {
             </div>
             <p className="text-gray-600 mb-8 text-sm">
                 A section appears on the website only when it is <b>Published</b> and has content. Empty or disabled sections
-                are removed completely, including their menu link and spacing.
+                are removed completely, including their spacing. A page (Journey, Projects, Blog) and its menu link exist only
+                while at least one of its sections is visible.
             </p>
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-100">
@@ -49,6 +50,7 @@ export default async function SectionsPage() {
                         </div>
                         <div className="flex-1">
                             <Link href={EDIT_LINKS[s.key]} className="font-semibold hover:text-blue-600">{s.label}</Link>
+                            <span className="ml-2 text-xs text-gray-400">on {PAGES[s.page].label} page</span>
                             <div className="mt-1"><SectionStatusBadge status={s} /></div>
                         </div>
                         <form action={setSectionPublished.bind(null, s.key, !s.published)}>

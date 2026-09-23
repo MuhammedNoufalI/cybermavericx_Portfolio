@@ -5,24 +5,35 @@ import type { Job, Project, Skill, Education, Certification, Award, Testimonial,
 // The site, the navbar and the admin preview all go through getPortfolio(),
 // so a section is visible in one place only if it is visible everywhere.
 
+// Each section lives on one page. A page (and its menu item) exists only
+// when at least one of its sections is visible.
+export const PAGES = {
+    home: { href: '/', label: 'Home' },
+    journey: { href: '/journey', label: 'Journey' },
+    projects: { href: '/projects', label: 'Projects' },
+    blog: { href: '/blog', label: 'Blog' },
+} as const
+export type PageKey = keyof typeof PAGES
+
 export const SECTION_DEFS = [
-    { key: 'about', label: 'About' },
-    { key: 'experience', label: 'Experience' },
-    { key: 'projects', label: 'Projects' },
-    { key: 'skills', label: 'Skills' },
-    { key: 'education', label: 'Education' },
-    { key: 'certifications', label: 'Certifications' },
-    { key: 'awards', label: 'Awards' },
-    { key: 'testimonials', label: 'Testimonials' },
-    { key: 'custom', label: 'Custom Sections' },
-    { key: 'blog', label: 'Blog' },
-] as const
+    { key: 'about', label: 'About', page: 'home' },
+    { key: 'testimonials', label: 'Testimonials', page: 'home' },
+    { key: 'custom', label: 'Custom Sections', page: 'home' },
+    { key: 'experience', label: 'Experience', page: 'journey' },
+    { key: 'education', label: 'Education', page: 'journey' },
+    { key: 'skills', label: 'Skills', page: 'journey' },
+    { key: 'certifications', label: 'Certifications', page: 'journey' },
+    { key: 'awards', label: 'Awards', page: 'journey' },
+    { key: 'projects', label: 'Projects', page: 'projects' },
+    { key: 'blog', label: 'Blog', page: 'blog' },
+] as const satisfies readonly { key: string; label: string; page: PageKey }[]
 
 export type SectionKey = typeof SECTION_DEFS[number]['key']
 
 export type SectionStatus = {
     key: SectionKey
     label: string
+    page: PageKey
     published: boolean
     count: number
     order: number
@@ -71,19 +82,20 @@ export async function getPortfolio() {
         const published = setting ? setting.published : true
         const count = counts[def.key]
         const reason: SectionStatus['reason'] = !published ? 'disabled' : count === 0 ? 'empty' : 'visible'
-        return { key: def.key, label: def.label, published, count, order: setting?.order ?? i, visible: reason === 'visible', reason }
+        return { key: def.key, label: def.label, page: def.page, published, count, order: setting?.order ?? i, visible: reason === 'visible', reason }
     }).sort((a, b) => a.order - b.order)
 
     const isVisible = (key: SectionKey) => sections.find(s => s.key === key)!.visible
 
-    // Nav is derived from visible sections only — no link ever points at a missing section.
-    const nav: NavLink[] = [{ href: '/', label: 'Home' }]
-    for (const s of sections) {
-        if (!s.visible) continue
-        if (s.key === 'blog') nav.push({ href: '/blog', label: 'Blog' })
-        else if (s.key === 'custom') visibleCustom.forEach(c => nav.push({ href: `/#custom-${c.id}`, label: c.title }))
-        else nav.push({ href: `/#${s.key}`, label: s.label })
-    }
+    // The CV is Journey content too: a Journey page with only a CV download is still useful.
+    const hasCv = hasText(profile?.cvUrl)
+    const pageVisible = (page: PageKey) =>
+        page === 'home' || sections.some(s => s.page === page && s.visible) || (page === 'journey' && hasCv)
+
+    // Nav is derived from visible pages only — no link ever points at a missing page.
+    const nav: NavLink[] = (Object.keys(PAGES) as PageKey[])
+        .filter(pageVisible)
+        .map(p => ({ href: PAGES[p].href, label: PAGES[p].label }))
     externalPages.filter(p => hasText(p.title) && hasText(p.url)).forEach(p => nav.push({ href: p.url, label: p.title, external: true }))
     nav.push({ href: '/contact', label: 'Contact' })
 
@@ -91,6 +103,8 @@ export async function getPortfolio() {
         profile,
         sections,
         isVisible,
+        pageVisible,
+        hasCv,
         nav,
         content: {
             jobs: jobs as Job[],

@@ -7,16 +7,16 @@ export default async function Contact() {
     const profile = await prisma.profile.findFirst()
 
     return (
-        <div className="min-h-screen p-8 sm:p-20 font-[family-name:var(--font-geist-sans)] flex flex-col items-center justify-center max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold mb-4 text-center bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-purple-500">Get In Touch</h1>
+        <div className="min-h-screen px-4 sm:px-10 lg:px-20 pt-20 sm:pt-24 pb-12 font-[family-name:var(--font-geist-sans)] flex flex-col items-center justify-center max-w-4xl mx-auto">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-center bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-purple-500">Get In Touch</h1>
             <p className="text-gray-600 dark:text-gray-300 text-center max-w-lg mb-12">
                 I'm always open to discussing new projects, creative ideas or opportunities to be part of your visions.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12 w-full">
                 {/* Contact Info */}
                 <div className="space-y-8">
-                    <div className="bg-[#120822]/60 backdrop-blur-md p-8 rounded-2xl border border-purple-500/10 shadow-lg shadow-purple-500/5">
+                    <div className="bg-[#120822]/60 backdrop-blur-md p-5 sm:p-8 rounded-2xl border border-purple-500/10 shadow-lg shadow-purple-500/5">
                         <h2 className="text-xl font-semibold mb-6 text-gray-100">Contact Details</h2>
 
                         <div className="space-y-6">
@@ -26,7 +26,7 @@ export default async function Contact() {
                                 </div>
                                 <div>
                                     <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Email</p>
-                                    <p className="font-medium text-gray-200">{profile?.email}</p>
+                                    <p className="font-medium text-gray-200 break-all">{profile?.email}</p>
                                 </div>
                             </a>
 

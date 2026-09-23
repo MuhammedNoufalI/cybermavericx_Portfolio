@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { getPortfolio } from '@/lib/sections'
 import Navbar from "@/components/Navbar";
+import SiteFooter from "@/components/SiteFooter";
+import RefTracker from "@/components/RefTracker";
 import ParticlesBackground from '@/components/ParticlesBackground';
 
 const geistSans = Geist({
@@ -53,7 +55,9 @@ export default async function RootLayout({
       >
         <ParticlesBackground />
         <Navbar logoUrl={profile?.logoUrl} links={nav} />
+        <RefTracker />
         {children}
+        <SiteFooter links={nav} name={profile?.fullName} />
       </body>
     </html>
   );

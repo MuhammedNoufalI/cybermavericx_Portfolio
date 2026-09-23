@@ -22,8 +22,8 @@ export default async function CollectionList({ params }: { params: Promise<{ col
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-3xl font-bold">Manage {c.title}</h1>
+            <div className="flex flex-wrap gap-3 justify-between items-center mb-4">
+                <h1 className="text-2xl sm:text-3xl font-bold">Manage {c.title}</h1>
                 <Link href={`/admin/content/${c.slug}/new`} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
                     <Plus size={18} /> Add {c.singular}
                 </Link>
@@ -33,9 +33,9 @@ export default async function CollectionList({ params }: { params: Promise<{ col
                 <Link href="/admin/sections" className="text-blue-600 hover:underline">Section settings</Link>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
                 {items.length > 0 ? (
-                    <table className="w-full text-left">
+                    <table className="w-full text-left min-w-[560px]">
                         <thead className="bg-gray-50 text-gray-500 font-medium text-sm">
                             <tr>
                                 {c.listColumns.map(col => <th key={col} className="px-6 py-4 capitalize">{col}</th>)}

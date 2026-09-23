@@ -1,67 +1,46 @@
 import { ImageResponse } from 'next/og'
 import { prisma } from '@/lib/prisma'
-import { join } from 'path'
-import { readFileSync } from 'fs'
+import { readFile } from 'fs/promises'
+import { resolveStoredFile } from '@/lib/upload'
 
-// Image metadata
-export const size = {
-    width: 32,
-    height: 32,
-}
+// Favicon generated from the logo uploaded in Admin → Profile.
+// Rendered per request so a new logo shows up without a rebuild.
+export const dynamic = 'force-dynamic'
+export const size = { width: 32, height: 32 }
 export const contentType = 'image/png'
 
-// Image generation
+const MIME: Record<string, string> = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml' }
+
 export default async function Icon() {
-    // Fetch profile logo
-    const profile = await prisma.profile.findFirst()
+    const profile = await prisma.profile.findFirst({ select: { logoUrl: true, fullName: true } })
     const logoUrl = profile?.logoUrl
 
-    if (logoUrl && logoUrl.startsWith('/uploads')) {
-        const fullPath = join(process.cwd(), 'public', logoUrl)
-        try {
-            const imageBuffer = readFileSync(fullPath)
-            const imageBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`
-
-            return new ImageResponse(
-                (
-                    <div
-                        style={{
-                            background: 'transparent',
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        {/* Use objectFit 'contain' and pass numbers as strings properly to avoid satori errors */}
-                        <img src={imageBase64} width="32" height="32" />
-                    </div>
-                ),
-                { ...size }
-            )
-        } catch (e) {
-            console.error('Missing logo file, falling back to default icon.')
+    if (logoUrl?.startsWith('/uploads/')) {
+        const filepath = resolveStoredFile(logoUrl)
+        const mime = MIME[logoUrl.split('.').pop()?.toLowerCase() || '']
+        if (filepath && mime) {
+            try {
+                const data = `data:${mime};base64,${(await readFile(filepath)).toString('base64')}`
+                return new ImageResponse(
+                    (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+                            <img src={data} width={32} height={32} style={{ objectFit: 'contain' }} />
+                        </div>
+                    ),
+                    { ...size }
+                )
+            } catch {
+                // fall through to the initial
+            }
         }
     }
 
-    // Fallback if no logo or file missing
+    const initial = (profile?.fullName || 'P').trim().charAt(0).toUpperCase()
     return new ImageResponse(
         (
-            <div
-                style={{
-                    fontSize: 24,
-                    background: 'black',
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    borderRadius: 16 // Fix: Cannot use '50%' in Satori
-                }}
-            >
-                D
+            <div style={{ fontSize: 22, fontWeight: 700, background: '#05010d', color: 'white', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8 }}>
+                {initial}
             </div>
         ),
         { ...size }

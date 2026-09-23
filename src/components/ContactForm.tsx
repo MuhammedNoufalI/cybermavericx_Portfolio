@@ -25,7 +25,7 @@ export default function ContactForm() {
     }
 
     return (
-        <form ref={formRef} onSubmit={e => e.preventDefault()} noValidate={false} className="bg-[#120822]/60 backdrop-blur-md p-8 rounded-2xl border border-purple-500/10 shadow-lg shadow-purple-500/5 space-y-6">
+        <form ref={formRef} onSubmit={e => e.preventDefault()} noValidate={false} className="bg-[#120822]/60 backdrop-blur-md p-5 sm:p-8 rounded-2xl border border-purple-500/10 shadow-lg shadow-purple-500/5 space-y-6">
             <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">Name</label>
                 <input name="name" type="text" id="name" required maxLength={200} className={input} placeholder="John Doe" />

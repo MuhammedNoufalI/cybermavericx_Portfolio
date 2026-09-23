@@ -4,6 +4,7 @@
 export type FieldType = 'text' | 'textarea' | 'markdown' | 'url' | 'date' | 'number' | 'image' | 'checkbox'
 
 export type Field = {
+    size?: 'full' | 'compact'
     name: string
     label: string
     type: FieldType
@@ -30,7 +31,7 @@ export const COLLECTIONS: Collection[] = [
         orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
         fields: [
             { name: 'title', label: 'Title', type: 'text', required: true },
-            { name: 'description', label: 'Description', type: 'textarea', required: true },
+            { name: 'description', label: 'Description', type: 'markdown', size: 'compact', required: true },
             { name: 'technologies', label: 'Technologies (comma separated)', type: 'text', placeholder: 'Terraform, AWS, GitHub Actions' },
             { name: 'demoUrl', label: 'Live / Demo URL', type: 'url' },
             { name: 'repoUrl', label: 'Repository URL', type: 'url' },
@@ -59,7 +60,7 @@ export const COLLECTIONS: Collection[] = [
             { name: 'location', label: 'Location', type: 'text' },
             { name: 'startDate', label: 'Start date', type: 'date' },
             { name: 'endDate', label: 'End date (empty = Present)', type: 'date' },
-            { name: 'description', label: 'Description', type: 'textarea' },
+            { name: 'description', label: 'Description', type: 'markdown', size: 'compact' },
             { name: 'order', label: 'Sort order', type: 'number' },
         ],
     },
@@ -72,7 +73,7 @@ export const COLLECTIONS: Collection[] = [
             { name: 'issuer', label: 'Issuer', type: 'text' },
             { name: 'date', label: 'Date', type: 'date' },
             { name: 'url', label: 'Link', type: 'url' },
-            { name: 'description', label: 'Description', type: 'textarea' },
+            { name: 'description', label: 'Description', type: 'markdown', size: 'compact' },
             { name: 'order', label: 'Sort order', type: 'number' },
         ],
     },

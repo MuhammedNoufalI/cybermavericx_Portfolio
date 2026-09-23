@@ -5,7 +5,7 @@ import { Download, Loader2 } from 'lucide-react'
 import RecaptchaButton from './RecaptchaButton'
 import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha-config'
 
-export default function CvDownloadButton({ label }: { label: string }) {
+export default function CvDownloadButton({ label, caption }: { label: string, caption?: string | null }) {
     const [error, setError] = useState('')
 
     const download = async (token: string | null) => {
@@ -44,7 +44,8 @@ export default function CvDownloadButton({ label }: { label: string }) {
             >
                 <Download size={18} /> {label}
             </RecaptchaButton>
-            {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+            {caption && <p className="text-xs text-gray-500 mt-2 max-w-full break-all text-center">{caption}</p>}
+            {error && <p className="text-red-400 text-xs mt-2 text-center">{error}</p>}
         </div>
     )
 }

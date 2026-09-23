@@ -1,20 +1,28 @@
 
 import { prisma } from '@/lib/prisma'
-import { FileText, Briefcase, Award, Globe } from 'lucide-react'
+import { FileText, Briefcase, Award, Mail, Download, Link2 } from 'lucide-react'
+
+export const dynamic = 'force-dynamic'
+
+const daysAgo = (n: number) => new Date(Date.now() - n * 24 * 3600_000)
 import Link from 'next/link'
 
 export default async function AdminDashboard() {
-    const [jobCount, blogCount, certCount] = await Promise.all([
+    const weekAgo = daysAgo(7)
+    const [jobCount, blogCount, certCount, unread, cvWeek, linkCount] = await Promise.all([
         prisma.job.count(),
         prisma.blog.count(),
         prisma.certification.count(),
+        prisma.message.count({ where: { read: false } }),
+        prisma.cvDownload.count({ where: { createdAt: { gte: weekAgo } } }),
+        prisma.trackedLink.count(),
     ])
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-8">Dashboard Overview</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-8">Dashboard Overview</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <StatCard
                     title="Total Jobs"
                     value={jobCount}
@@ -34,13 +42,22 @@ export default async function AdminDashboard() {
                     href="/admin/certs"
                 />
                 <StatCard
-                    title="External Pages"
-                    value={0} // We didn't fetch count to keep it simple, or we can fetch it. 
-                    // To avoid redefining variables, I will ignore value for now or pass 0.
-                    // Actually, let's just make it a simple Link card since getting count requires modifying queries.
-                    // I will change it to a StatCard with value "Manage".
-                    icon={<Globe size={24} className="text-purple-500" />}
-                    href="/admin/pages"
+                    title="Unread Messages"
+                    value={unread}
+                    icon={<Mail size={24} className="text-pink-500" />}
+                    href="/admin/messages"
+                />
+                <StatCard
+                    title="CV Downloads (7 days)"
+                    value={cvWeek}
+                    icon={<Download size={24} className="text-cyan-500" />}
+                    href="/admin/downloads"
+                />
+                <StatCard
+                    title="Tracked Links"
+                    value={linkCount}
+                    icon={<Link2 size={24} className="text-purple-500" />}
+                    href="/admin/links"
                 />
             </div>
 

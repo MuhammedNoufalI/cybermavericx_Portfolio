@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 interface PageProps {
     params: Promise<{ id: string }>
 }
+import MarkdownEditor from '@/components/MarkdownEditor'
 
 export default async function EditJob({ params }: PageProps) {
     const { id } = await params
@@ -14,10 +15,10 @@ export default async function EditJob({ params }: PageProps) {
     if (!job) notFound()
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold mb-8">Edit Job</h1>
 
-            <form action={updateJob.bind(null, id)} className="space-y-6 bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <form action={updateJob.bind(null, id)} className="space-y-6 bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="block text-sm font-medium mb-2">Company</label>
@@ -47,7 +48,7 @@ export default async function EditJob({ params }: PageProps) {
 
                 <div>
                     <label className="block text-sm font-medium mb-2">Description</label>
-                    <textarea name="description" defaultValue={job.description} required rows={5} className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent" />
+                    <MarkdownEditor name="description" size="compact" required initialValue={job.description} placeholder="What you did, key wins. Use **bold**, lists, links." />
                 </div>
 
                 <div>

@@ -17,7 +17,7 @@ export default async function EditCertification({ params }: PageProps) {
         <div className="max-w-2xl mx-auto">
             <h1 className="text-3xl font-bold mb-8">Edit Certification</h1>
 
-            <form action={updateCertification.bind(null, id)} className="space-y-6 bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <form action={updateCertification.bind(null, id)} className="space-y-6 bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div>
                     <label className="block text-sm font-medium mb-2">Certification Name</label>
                     <input name="name" type="text" defaultValue={cert.name} required className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent" />

@@ -12,16 +12,16 @@ export default async function AdminCerts() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">Manage Certifications</h1>
+            <div className="flex flex-wrap gap-3 justify-between items-center mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold">Manage Certifications</h1>
                 <Link href="/admin/certs/new" className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
                     <Plus size={18} />
                     Add Cert
                 </Link>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <table className="w-full text-left">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-x-auto">
+                <table className="w-full text-left min-w-[560px]">
                     <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-medium text-sm">
                         <tr>
                             <th className="px-6 py-4">Image</th>

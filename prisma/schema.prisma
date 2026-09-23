@@ -141,6 +141,41 @@ model CustomSection {
   @@map("customsection")
 }
 
+// Personal links you hand out (e.g. to a recruiter) so visits and CV downloads
+// can be attributed: /?r=<code>
+model TrackedLink {
+  id         String    @id @default(uuid())
+  code       String    @unique @db.VarChar(64)
+  label      String // e.g. "ENBD – Sara (HR)"
+  note       String?   @db.Text
+  visits     Int       @default(0)
+  downloads  Int       @default(0)
+  lastSeenAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@map("trackedlink")
+}
+
+// One row per verified (reCAPTCHA-passed) CV download.
+model CvDownload {
+  id        String   @id @default(uuid())
+  ip        String   @db.VarChar(64)
+  country   String?  @db.VarChar(64)
+  city      String?  @db.VarChar(128)
+  org       String?  @db.VarChar(191) // company / ISP that owns the IP
+  source    String?  @db.VarChar(191) // referrer host or utm_source of the first visit
+  linkId    String?
+  linkLabel String?  @db.VarChar(191)
+  device    String?  @db.VarChar(128)
+  userAgent String?  @db.Text
+  score     Float?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("cvdownload")
+}
+
 // Per-IP hits on reCAPTCHA-protected endpoints. Stored in the DB (not memory)
 // so limits hold across pm2 cluster workers.
 model RateLimitHit {

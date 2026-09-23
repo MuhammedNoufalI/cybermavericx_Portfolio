@@ -47,7 +47,7 @@ export default async function BlogList(props: {
             {/* Header */}
             <header className="bg-white dark:bg-[#120822] border-b border-gray-200 dark:border-gray-800 py-8 sm:py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className={`text-3xl sm:text-5xl font-black mb-2 bg-clip-text text-transparent bg-linear-to-r ${blogGradient}`}>
+                    <h1 className={`text-[clamp(1.75rem,7vw,3rem)] font-black mb-2 text-balance bg-clip-text text-transparent bg-linear-to-r ${blogGradient}`}>
                         {blogTitle}
                     </h1>
                     {blogHeadline && (
@@ -70,7 +70,7 @@ export default async function BlogList(props: {
                         ) : (
                             posts.map((post: Blog) => (
                                 <Link key={post.id} href={`/blog/${post.slug}`} className="group block">
-                                    <article className="bg-white dark:bg-[#120822] border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:shadow-lg hover:border-purple-500/30 transition-all">
+                                    <article className="bg-white dark:bg-[#120822] border border-gray-200 dark:border-gray-800 rounded-lg p-4 sm:p-6 hover:shadow-lg hover:border-purple-500/30 transition-all">
                                         <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
                                             <Calendar size={14} />
                                             <time>
@@ -82,7 +82,7 @@ export default async function BlogList(props: {
                                             </time>
                                         </div>
 
-                                        <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-gray-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                                        <h2 className="text-xl sm:text-2xl font-bold mb-3 break-words text-gray-900 dark:text-gray-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                                             {post.title}
                                         </h2>
 

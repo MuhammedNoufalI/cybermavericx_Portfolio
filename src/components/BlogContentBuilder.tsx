@@ -166,7 +166,7 @@ export default function BlogContentBuilder({ initialContent, name }: BlogContent
                 )}
             </div>
 
-            <div className="flex gap-2 justify-center pt-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="flex flex-wrap gap-2 justify-center pt-4 border-t border-gray-200 dark:border-gray-800">
                 <button type="button" onClick={() => addBlock('subheading', 2)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 text-sm font-medium transition-colors">
                     <Hash size={16} /> Add Heading
                 </button>

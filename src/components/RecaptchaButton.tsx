@@ -62,6 +62,7 @@ export default function RecaptchaButton({ action, onToken, beforeSubmit, classNa
                 callback: (token) => { void run(token) },
                 'expired-callback': () => { setNotice('Verification expired. Please try again.'); reset() },
                 'error-callback': () => { setNotice('Verification could not load. Check your connection or ad blocker, then try again.'); reset() },
+                badge: 'inline',
             })
             setReady(true)
             setNotice('')

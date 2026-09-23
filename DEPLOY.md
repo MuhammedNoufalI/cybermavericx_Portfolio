@@ -16,12 +16,27 @@ pm2 restart all
 `.env` must contain every key in `.env.example`. Note `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`
 is baked in at build time — rebuild after changing it.
 
+pm2 runs one fork-mode process named `portfolio` (`pm2 start ecosystem.config.js` on a
+fresh server, then `pm2 save`). Don't start a second copy — both would fight for port 3021.
+
 ## Content visibility
 
-Every public section (About, Experience, Projects, Skills, Education, Certifications,
-Awards, Testimonials, Custom Sections, Blog) renders only when it is **Published** in
-Admin → Sections **and** has content. The nav, footer, CTAs and admin preview all use
-`getPortfolio()` in `src/lib/sections.ts`, so they can't disagree.
+Every public section renders only when it is **Published** in Admin → Sections **and** has
+content. Sections live on pages: Home (About, Testimonials, Custom), Journey (Experience,
+Education, Skills, Certifications, Awards + CV), Projects, Blog. A page and its menu/footer
+link exist only while one of its sections is visible (Journey also counts the CV). The nav,
+footer, CTAs and admin preview all use `getPortfolio()` in `src/lib/sections.ts`.
+
+## CV download tracking
+
+- **Tracked links** (Admin → Tracked Links): personal URLs like `/?r=enbd-sara-hr-7f3k`.
+  Opening one sends a Telegram "tracked link opened" alert (once per link+IP per 30 min);
+  later CV downloads and contact messages name the link. Stored in first-party cookies for 90 days.
+- **Every verified CV download** is saved (Admin → CV Downloads) with the IP owner
+  (company/ISP via ipapi.co free tier), location, first-touch source (referrer / utm_source)
+  and device. Lookups time out after 2.5 s and never delay the download.
+- Times are shown in `NOTIFY_TIMEZONE` (default `Asia/Dubai`).
+- Disclosed on `/privacy` (footer link).
 
 ## reCAPTCHA Enterprise
 

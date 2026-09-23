@@ -67,14 +67,14 @@ export default function ProfileForm({ profile, updateProfileAction }: ProfileFor
                 />
             )}
 
-            <form onSubmit={onSubmit} className="space-y-8 bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+            <form onSubmit={onSubmit} className="space-y-8 bg-white p-4 sm:p-8 rounded-xl border border-gray-200 shadow-sm">
                 <input type="hidden" name="id" value={profile.id} />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Colors */}
                     <div className="col-span-2">
                         <label className="block text-sm font-medium mb-3 text-gray-700">Theme Color</label>
-                        <div className="flex gap-4">
+                        <div className="flex flex-wrap gap-4">
                             {['purple', 'blue', 'green', 'orange', 'red', 'pink'].map(color => (
                                 <label key={color} className="cursor-pointer relative group">
                                     <input type="radio" name="themeColor" value={color} defaultChecked={profile.themeColor === color} className="peer sr-only" />
@@ -91,7 +91,7 @@ export default function ProfileForm({ profile, updateProfileAction }: ProfileFor
                         </div>
                     </div>
 
-                    <div className="col-span-2 grid grid-cols-2 gap-8">
+                    <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
                         <div className="">
                             <label className="block text-sm font-medium mb-2 text-gray-700">Profile Image</label>
                             <div className="flex gap-4 items-center mb-2">

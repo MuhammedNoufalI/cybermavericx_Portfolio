@@ -74,59 +74,50 @@ export async function deleteJob(id: string) {
 
 // --- Blogs ---
 
-export async function createBlog(formData: FormData) {
-    await requireAdmin()
-    const title = formData.get('title') as string
-    const slug = formData.get('slug') as string
-    const content = formData.get('content') as string
-    const excerpt = formData.get('excerpt') as string
-    const tags = formData.get('tags') as string
-    const references = formData.get('references') as string
-    const advertising = formData.get('advertising') as string
+// URL-safe slug; falls back to the title and is made unique (never a DB crash on duplicates)
+async function uniqueSlug(raw: string, title: string, excludeId?: string) {
+    const base = (raw || title).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 150) || 'post'
+    let slug = base
+    for (let i = 2; ; i++) {
+        const clash = await prisma.blog.findFirst({ where: { slug, ...(excludeId && { NOT: { id: excludeId } }) }, select: { id: true } })
+        if (!clash) return slug
+        slug = `${base}-${i}`
+    }
+}
 
-    await prisma.blog.create({
-        data: {
-            title,
-            slug,
-            content,
-            excerpt,
-            tags,
-            references,
-            advertising,
-            published: true // auto publish for now
-        }
-    })
+function blogFields(formData: FormData) {
+    return {
+        title: String(formData.get('title') || '').trim(),
+        content: String(formData.get('content') || ''),
+        excerpt: String(formData.get('excerpt') || '').trim() || null,
+        tags: String(formData.get('tags') || '').trim() || null,
+        references: String(formData.get('references') || '') || null,
+        advertising: String(formData.get('advertising') || '') || null,
+        published: formData.get('published') === 'on',
+    }
+}
 
+function revalidateBlog() {
+    revalidatePath('/', 'layout') // nav shows/hides Blog
     revalidatePath('/blog')
     revalidatePath('/admin/blogs')
+}
+
+export async function createBlog(formData: FormData) {
+    await requireAdmin()
+    const data = blogFields(formData)
+    const slug = await uniqueSlug(String(formData.get('slug') || ''), data.title)
+    await prisma.blog.create({ data: { ...data, slug } })
+    revalidateBlog()
     redirect('/admin/blogs')
 }
 
 export async function updateBlog(id: string, formData: FormData) {
     await requireAdmin()
-    const title = formData.get('title') as string
-    const slug = formData.get('slug') as string
-    const content = formData.get('content') as string
-    const excerpt = formData.get('excerpt') as string
-    const tags = formData.get('tags') as string
-    const references = formData.get('references') as string
-    const advertising = formData.get('advertising') as string
-
-    await prisma.blog.update({
-        where: { id },
-        data: {
-            title,
-            slug,
-            content,
-            excerpt,
-            tags,
-            references,
-            advertising,
-        }
-    })
-
-    revalidatePath('/blog')
-    revalidatePath('/admin/blogs')
+    const data = blogFields(formData)
+    const slug = await uniqueSlug(String(formData.get('slug') || ''), data.title, id)
+    await prisma.blog.update({ where: { id }, data: { ...data, slug } })
+    revalidateBlog()
     redirect('/admin/blogs')
 }
 

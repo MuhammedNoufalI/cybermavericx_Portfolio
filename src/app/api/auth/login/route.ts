@@ -1,6 +1,8 @@
 
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { rateLimit } from '@/lib/rate-limit'
+import { clientIp } from '@/lib/request-meta'
 import { createSessionToken, safeEqualString, SESSION_COOKIE, SESSION_TTL_SECONDS } from '@/lib/session'
 
 export async function POST(request: Request) {
@@ -12,6 +14,11 @@ export async function POST(request: Request) {
     if (!ADMIN_USERNAME || !ADMIN_PASSWORD || !process.env.SESSION_SECRET) {
         console.error('[auth] ADMIN_USERNAME / ADMIN_PASSWORD / SESSION_SECRET not configured')
         return NextResponse.json({ success: false, message: 'Login is not configured' }, { status: 500 })
+    }
+
+    // Brute-force guard: 5/min, 30/h per IP
+    if (!(await rateLimit('login', clientIp(request.headers))).ok) {
+        return NextResponse.json({ success: false, message: 'Too many attempts. Try again later.' }, { status: 429 })
     }
 
     const userOk = safeEqualString(String(username ?? ''), ADMIN_USERNAME)

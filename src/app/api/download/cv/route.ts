@@ -4,6 +4,7 @@ import { sendTelegramNotification } from '@/lib/telegram'
 import { verifyRecaptcha, log as logRecaptcha } from '@/lib/recaptcha'
 import { RECAPTCHA_ACTIONS, RECAPTCHA_GENERIC_ERROR } from '@/lib/recaptcha-config'
 import { rateLimit } from '@/lib/rate-limit'
+import { describeDevice, formatTime, getAttribution, lookupIp, md } from '@/lib/visitor'
 import { clientMeta } from '@/lib/request-meta'
 import { resolveStoredFile } from '@/lib/upload'
 import { readFile } from 'fs/promises'
@@ -46,9 +47,38 @@ export async function POST(request: Request) {
 
         const fileBuffer = await readFile(filepath)
 
-        // Only verified humans reach this point
-        const message = `📥 *CV Downloaded*\n\n*Time:* ${new Date().toLocaleString()}\n*IP:* ${meta.ip}${meta.country ? ` (${meta.country})` : ''}\n*Score:* ${check.score ?? 'n/a'}\n*User Agent:* ${meta.userAgent}`
-        sendTelegramNotification(message).catch(err => console.error('CV Notification Error:', err))
+        // Only verified humans reach this point. Attribution runs after the response
+        // is prepared so a slow IP lookup never delays the download.
+        const { link, source } = await getAttribution()
+        const headers = request.headers
+        const notify = async () => {
+            const ipi = await lookupIp(meta.ip, headers)
+            const device = describeDevice(meta.userAgent)
+            await prisma.cvDownload.create({
+                data: {
+                    ip: meta.ip, country: ipi.country ?? null, city: ipi.city ?? null, org: ipi.org ?? null,
+                    source, linkId: link?.id ?? null, linkLabel: link?.label ?? null,
+                    device, userAgent: meta.userAgent, score: check.score,
+                },
+            })
+            if (link) await prisma.trackedLink.update({ where: { id: link.id }, data: { downloads: { increment: 1 }, lastSeenAt: new Date() } })
+
+            const place = [ipi.city, ipi.country].filter(Boolean).join(', ')
+            const text = [
+                `📥 *CV Downloaded*`,
+                ``,
+                link ? `🔗 *Link:* ${md(link.label)}` : `🔗 *Link:* none (organic visit)`,
+                ipi.org && `🏢 *Network:* ${md(ipi.org)}`,
+                place && `📍 *Location:* ${md(place)}`,
+                source && source !== 'direct' && `↪️ *Came from:* ${md(source)}`,
+                `💻 *Device:* ${md(device)}`,
+                `🛡 *Human score:* ${check.score ?? 'n/a'}`,
+                `🕒 ${formatTime()}`,
+                `🌐 ${meta.ip}`,
+            ].filter(Boolean).join('\n')
+            await sendTelegramNotification(text)
+        }
+        notify().catch(err => console.error('CV Notification Error:', err))
 
         const downloadName = (profile!.cvDisplayName || 'CV.pdf').replace(/["\r\n]/g, '')
 

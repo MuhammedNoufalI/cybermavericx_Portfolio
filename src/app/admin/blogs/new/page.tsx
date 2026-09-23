@@ -8,7 +8,7 @@ export default function NewBlog() {
         <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold mb-8">Write New Post</h1>
 
-            <form action={createBlog} className="space-y-6 bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <form action={createBlog} className="space-y-6 bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div>
                     <label className="block text-sm font-medium mb-2">Title</label>
                     <input name="title" type="text" required className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent" placeholder="My Awesome Post" />
@@ -44,9 +44,14 @@ export default function NewBlog() {
                     <textarea name="advertising" rows={3} className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent" placeholder="Ad code or promotional text..." />
                 </div>
 
+                <label className="flex items-center gap-3 text-sm font-medium">
+                    <input type="checkbox" name="published" defaultChecked className="w-4 h-4" />
+                    Published <span className="text-gray-500 font-normal">(unchecked = save as draft)</span>
+                </label>
+
                 <div className="flex justify-end gap-4 pt-4">
                     <a href="/admin/blogs" className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</a>
-                    <button type="submit" className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition-colors">Publish Post</button>
+                    <button type="submit" className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition-colors">Save Post</button>
                 </div>
             </form>
         </div>
